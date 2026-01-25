@@ -2,30 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
-/* AleoSynth Design System - Dark, Privacy-Focused Aesthetic */
+/* AleoSynth Design System - Coal & Ivory Minimal Aesthetic */
 
 @layer base {
   :root {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 100%;
+    --background: 0 0% 7%;
+    --foreground: 0 0% 96%;
 
-    --card: 0 0% 4%;
-    --card-foreground: 0 0% 100%;
+    --card: 0 0% 9%;
+    --card-foreground: 0 0% 96%;
 
-    --popover: 0 0% 4%;
-    --popover-foreground: 0 0% 100%;
+    --popover: 0 0% 9%;
+    --popover-foreground: 0 0% 96%;
 
-    --primary: 0 0% 100%;
-    --primary-foreground: 0 0% 0%;
+    --primary: 0 0% 96%;
+    --primary-foreground: 0 0% 7%;
 
-    --secondary: 0 0% 10%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 96%;
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 55%;
 
-    --accent: 142 76% 45%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 7%;
 
     --success: 142 76% 45%;
     --success-foreground: 0 0% 100%;
@@ -36,32 +36,30 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
-    --ring: 0 0% 100%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 0 0% 96%;
 
-    --radius: 0.5rem;
+    --radius: 0.25rem;
 
     /* Custom AleoSynth tokens */
-    --glow-primary: 0 0% 100% / 0.1;
-    --glow-accent: 142 76% 45% / 0.2;
-    --gradient-dark: linear-gradient(180deg, hsl(0 0% 0%) 0%, hsl(0 0% 4%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(0 0% 6%) 0%, hsl(0 0% 3%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(142 76% 45%) 0%, hsl(142 76% 35%) 100%);
+    --glow-primary: 0 0% 100% / 0.05;
+    --gradient-dark: linear-gradient(180deg, hsl(0 0% 7%) 0%, hsl(0 0% 5%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 10%) 0%, hsl(0 0% 7%) 100%);
     
-    --sidebar-background: 0 0% 2%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 0 0% 10%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 15%;
-    --sidebar-ring: 0 0% 100%;
+    --sidebar-background: 0 0% 5%;
+    --sidebar-foreground: 0 0% 96%;
+    --sidebar-primary: 0 0% 96%;
+    --sidebar-primary-foreground: 0 0% 7%;
+    --sidebar-accent: 0 0% 12%;
+    --sidebar-accent-foreground: 0 0% 96%;
+    --sidebar-border: 0 0% 18%;
+    --sidebar-ring: 0 0% 96%;
   }
 
   .dark {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 100%;
+    --background: 0 0% 7%;
+    --foreground: 0 0% 96%;
   }
 }
 
@@ -82,43 +80,34 @@
 
 @layer components {
   .glass-card {
-    @apply bg-card/50 backdrop-blur-xl border border-border/50 rounded-lg;
+    @apply bg-card/80 backdrop-blur-sm border border-border/30 rounded-sm;
   }
 
-  .glow-border {
-    @apply relative;
-    box-shadow: 0 0 40px -10px hsl(var(--glow-primary));
-  }
-
-  .glow-accent {
-    box-shadow: 0 0 60px -15px hsl(var(--accent) / 0.4);
+  .minimal-card {
+    @apply border border-border/40 bg-transparent;
   }
 
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60;
   }
 
   .hero-gradient {
-    background: radial-gradient(ellipse 80% 50% at 50% -20%, hsl(0 0% 20% / 0.3), transparent);
+    background: radial-gradient(ellipse 60% 40% at 50% 0%, hsl(0 0% 15% / 0.4), transparent);
   }
 
   .grid-pattern {
     background-image: 
-      linear-gradient(hsl(0 0% 100% / 0.02) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(0 0% 100% / 0.02) 1px, transparent 1px);
-    background-size: 60px 60px;
+      linear-gradient(hsl(0 0% 100% / 0.015) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(0 0% 100% / 0.015) 1px, transparent 1px);
+    background-size: 80px 80px;
   }
 
   .animate-fade-up {
-    animation: fadeUp 0.6s ease-out forwards;
+    animation: fadeUp 0.5s ease-out forwards;
   }
 
   .animate-fade-in {
-    animation: fadeIn 0.4s ease-out forwards;
-  }
-
-  .animate-pulse-slow {
-    animation: pulse 3s ease-in-out infinite;
+    animation: fadeIn 0.3s ease-out forwards;
   }
 }
 
