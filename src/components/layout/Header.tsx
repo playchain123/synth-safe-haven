@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { WalletButton } from "@/components/aleo/WalletButton";
 
 const Header = () => {
   const location = useLocation();
@@ -42,13 +43,15 @@ const Header = () => {
           </Link>
         </nav>
 
-        <Button variant="outline" size="sm" className="h-7 text-[10px] tracking-wide uppercase px-4 rounded-sm" asChild>
-          <Link to="/upload">Get Started</Link>
-        </Button>
+        <div className="flex items-center gap-3">
+          <WalletButton />
+          <Button variant="outline" size="sm" className="h-7 text-[10px] tracking-wide uppercase px-4 rounded-sm hidden sm:inline-flex" asChild>
+            <Link to="/upload">Get Started</Link>
+          </Button>
+        </div>
       </div>
     </header>
   );
 };
 
 export default Header;
-
