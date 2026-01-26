@@ -14,7 +14,219 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      aleo_transactions: {
+        Row: {
+          block_height: number | null
+          confirmed_at: string | null
+          created_at: string
+          function_name: string
+          generation_id: string | null
+          id: string
+          inputs: Json | null
+          outputs: Json | null
+          program_id: string
+          status: string
+          tx_id: string
+          tx_type: string
+          user_address: string
+        }
+        Insert: {
+          block_height?: number | null
+          confirmed_at?: string | null
+          created_at?: string
+          function_name: string
+          generation_id?: string | null
+          id?: string
+          inputs?: Json | null
+          outputs?: Json | null
+          program_id?: string
+          status?: string
+          tx_id: string
+          tx_type: string
+          user_address: string
+        }
+        Update: {
+          block_height?: number | null
+          confirmed_at?: string | null
+          created_at?: string
+          function_name?: string
+          generation_id?: string | null
+          id?: string
+          inputs?: Json | null
+          outputs?: Json | null
+          program_id?: string
+          status?: string
+          tx_id?: string
+          tx_type?: string
+          user_address?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aleo_transactions_generation_id_fkey"
+            columns: ["generation_id"]
+            isOneToOne: false
+            referencedRelation: "synthetic_generations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      datasets: {
+        Row: {
+          column_count: number
+          created_at: string
+          dataset_type: string
+          filename: string
+          id: string
+          original_hash: string
+          row_count: number
+          status: string
+          updated_at: string
+          user_address: string
+        }
+        Insert: {
+          column_count?: number
+          created_at?: string
+          dataset_type?: string
+          filename: string
+          id?: string
+          original_hash: string
+          row_count?: number
+          status?: string
+          updated_at?: string
+          user_address: string
+        }
+        Update: {
+          column_count?: number
+          created_at?: string
+          dataset_type?: string
+          filename?: string
+          id?: string
+          original_hash?: string
+          row_count?: number
+          status?: string
+          updated_at?: string
+          user_address?: string
+        }
+        Relationships: []
+      }
+      proofs: {
+        Row: {
+          created_at: string
+          dataset_commitment: string
+          generation_id: string
+          id: string
+          params_hash: string
+          proof_hash: string
+          quality_score: number
+          receipt_data: Json | null
+          synth_commitment: string
+          user_address: string
+          verified: boolean
+        }
+        Insert: {
+          created_at?: string
+          dataset_commitment: string
+          generation_id: string
+          id?: string
+          params_hash: string
+          proof_hash: string
+          quality_score?: number
+          receipt_data?: Json | null
+          synth_commitment: string
+          user_address: string
+          verified?: boolean
+        }
+        Update: {
+          created_at?: string
+          dataset_commitment?: string
+          generation_id?: string
+          id?: string
+          params_hash?: string
+          proof_hash?: string
+          quality_score?: number
+          receipt_data?: Json | null
+          synth_commitment?: string
+          user_address?: string
+          verified?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proofs_generation_id_fkey"
+            columns: ["generation_id"]
+            isOneToOne: false
+            referencedRelation: "synthetic_generations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      synthetic_generations: {
+        Row: {
+          aleo_proof_hash: string | null
+          aleo_tx_id: string | null
+          aleo_verified: boolean
+          columns_included: number
+          created_at: string
+          dataset_id: string
+          id: string
+          output_format: string
+          privacy_verified: boolean
+          quality_mode: string
+          quality_score: number | null
+          rows_generated: number
+          sensitive_removed: number
+          synth_commitment: string | null
+          synth_ready: boolean
+          synthetic_data: Json | null
+          user_address: string
+        }
+        Insert: {
+          aleo_proof_hash?: string | null
+          aleo_tx_id?: string | null
+          aleo_verified?: boolean
+          columns_included?: number
+          created_at?: string
+          dataset_id: string
+          id?: string
+          output_format?: string
+          privacy_verified?: boolean
+          quality_mode?: string
+          quality_score?: number | null
+          rows_generated?: number
+          sensitive_removed?: number
+          synth_commitment?: string | null
+          synth_ready?: boolean
+          synthetic_data?: Json | null
+          user_address: string
+        }
+        Update: {
+          aleo_proof_hash?: string | null
+          aleo_tx_id?: string | null
+          aleo_verified?: boolean
+          columns_included?: number
+          created_at?: string
+          dataset_id?: string
+          id?: string
+          output_format?: string
+          privacy_verified?: boolean
+          quality_mode?: string
+          quality_score?: number | null
+          rows_generated?: number
+          sensitive_removed?: number
+          synth_commitment?: string | null
+          synth_ready?: boolean
+          synthetic_data?: Json | null
+          user_address?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "synthetic_generations_dataset_id_fkey"
+            columns: ["dataset_id"]
+            isOneToOne: false
+            referencedRelation: "datasets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

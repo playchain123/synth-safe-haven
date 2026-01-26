@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAleo } from "@/lib/aleo/use-aleo";
 import Header from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +9,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Upload as UploadIcon, FileText, X, Shield, Zap, Settings2 } from "lucide-react";
+import { Upload as UploadIcon, FileText, X, Shield, Zap, Settings2, CheckCircle } from "lucide-react";
+import { toast } from "sonner";
 
 interface ColumnInfo {
   name: string;
@@ -18,6 +20,8 @@ interface ColumnInfo {
 
 const Upload = () => {
   const navigate = useNavigate();
+  const { registerDataset, generateSynthetic, address, connected, isLoading } = useAleo();
+  
   const [file, setFile] = useState<File | null>(null);
   const [datasetType, setDatasetType] = useState<string>("");
   const [columns, setColumns] = useState<ColumnInfo[]>([]);
@@ -28,6 +32,8 @@ const Upload = () => {
   const [qualityMode, setQualityMode] = useState("balanced");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStep, setGenerationStep] = useState("");
+  const [datasetId, setDatasetId] = useState<string | null>(null);
+  const [originalHash, setOriginalHash] = useState<string>("");
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -44,10 +50,32 @@ const Upload = () => {
     }
   };
 
-  const processFile = (file: File) => {
+  const processFile = async (file: File) => {
     setFile(file);
-    // Simulate column detection
-    const mockColumns: ColumnInfo[] = [
+    
+    // Generate hash of file content
+    const content = await file.text();
+    let hash = 0;
+    for (let i = 0; i < content.length; i++) {
+      const char = content.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    setOriginalHash(Math.abs(hash).toString(16));
+    
+    // Simulate column detection from CSV headers
+    const lines = content.split('\n');
+    const headers = lines[0]?.split(',').map(h => h.trim().toLowerCase()) || [];
+    
+    const mockColumns: ColumnInfo[] = headers.length > 0 ? headers.map(header => {
+      let type: "sensitive" | "numeric" | "categorical" = "categorical";
+      if (["name", "email", "phone", "ssn", "address"].some(s => header.includes(s))) {
+        type = "sensitive";
+      } else if (["id", "age", "salary", "amount", "price", "count", "number"].some(s => header.includes(s))) {
+        type = "numeric";
+      }
+      return { name: header, type, selected: true };
+    }) : [
       { name: "id", type: "numeric", selected: false },
       { name: "name", type: "sensitive", selected: true },
       { name: "email", type: "sensitive", selected: true },
@@ -57,6 +85,7 @@ const Upload = () => {
       { name: "department", type: "categorical", selected: true },
       { name: "country", type: "categorical", selected: true },
     ];
+    
     setColumns(mockColumns);
   };
 
@@ -66,28 +95,93 @@ const Upload = () => {
     );
   };
 
+  const handleRegisterDataset = async () => {
+    if (!file) return;
+    
+    setIsGenerating(true);
+    setGenerationStep("Registering dataset on Aleo testnet…");
+    
+    try {
+      const result = await registerDataset(
+        file.name,
+        originalHash,
+        columns.length,
+        100, // Estimated row count
+        datasetType || "custom"
+      );
+      
+      setDatasetId(result.datasetId);
+      toast.success("Dataset registered on Aleo testnet!", {
+        description: `TX: ${result.aleoTxId.slice(0, 16)}...`
+      });
+      
+      return result.datasetId;
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast.error("Failed to register dataset");
+      throw error;
+    }
+  };
+
   const handleGenerate = async () => {
     setIsGenerating(true);
-    setGenerationStep("Generating synthetic dataset…");
     
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setGenerationStep("Verifying privacy rules…");
-    
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setGenerationStep("Finalizing output…");
-    
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Store generation config in sessionStorage for results page
-    sessionStorage.setItem("aleosynth_config", JSON.stringify({
-      rows: syntheticRows[0],
-      columns: columns.filter(c => c.selected).length,
-      sensitiveRemoved: columns.filter(c => c.type === "sensitive" && hideSensitive).length,
-      format: outputFormat,
-      quality: qualityMode,
-    }));
-    
-    navigate("/results");
+    try {
+      // Step 1: Register dataset if not already registered
+      let currentDatasetId = datasetId;
+      if (!currentDatasetId) {
+        setGenerationStep("Registering dataset on Aleo testnet…");
+        currentDatasetId = await handleRegisterDataset();
+      }
+      
+      // Step 2: Generate synthetic data
+      setGenerationStep("Generating synthetic dataset…");
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const result = await generateSynthetic(
+        currentDatasetId!,
+        columns,
+        hideSensitive,
+        privacySafeRanges,
+        syntheticRows[0],
+        outputFormat,
+        qualityMode,
+        originalHash
+      );
+      
+      setGenerationStep("Verifying privacy rules…");
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      setGenerationStep("Creating Aleo proof…");
+      await new Promise(resolve => setTimeout(resolve, 600));
+      
+      // Store generation result in sessionStorage for results page
+      sessionStorage.setItem("aleosynth_config", JSON.stringify({
+        rows: syntheticRows[0],
+        columns: result.columnsIncluded,
+        sensitiveRemoved: result.sensitiveRemoved,
+        format: outputFormat,
+        quality: qualityMode,
+        qualityScore: result.qualityScore,
+        generationId: result.generationId,
+        aleoTxId: result.aleoTxId,
+        proofHash: result.proofHash,
+        synthCommitment: result.synthCommitment,
+        syntheticData: result.syntheticData,
+      }));
+      
+      toast.success("Synthetic dataset generated!", {
+        description: `Quality Score: ${result.qualityScore}%`
+      });
+      
+      navigate("/results");
+    } catch (error) {
+      console.error("Generation error:", error);
+      toast.error("Failed to generate synthetic data");
+    } finally {
+      setIsGenerating(false);
+      setGenerationStep("");
+    }
   };
 
   const rowOptions = [10, 50, 100, 500, 1000];
@@ -103,6 +197,12 @@ const Upload = () => {
             <p className="text-muted-foreground text-lg">
               Your original dataset remains private throughout the process.
             </p>
+            {connected && address && (
+              <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary text-xs">
+                <CheckCircle className="h-3 w-3 text-accent" />
+                <span className="font-mono">{address.slice(0, 12)}...{address.slice(-6)}</span>
+              </div>
+            )}
           </div>
 
           <div className="grid gap-8">
@@ -128,7 +228,7 @@ const Upload = () => {
                     <p className="text-sm text-muted-foreground mb-4">or click to browse</p>
                     <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
                       <Shield className="h-3 w-3" />
-                      Your data stays private
+                      Your data stays private — only hashes go on-chain
                     </p>
                     <input
                       id="file-upload"
@@ -145,7 +245,7 @@ const Upload = () => {
                       <div>
                         <p className="font-medium">{file.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {(file.size / 1024).toFixed(1)} KB
+                          {(file.size / 1024).toFixed(1)} KB • Hash: {originalHash.slice(0, 8)}...
                         </p>
                       </div>
                     </div>
@@ -155,6 +255,8 @@ const Upload = () => {
                       onClick={() => {
                         setFile(null);
                         setColumns([]);
+                        setDatasetId(null);
+                        setOriginalHash("");
                       }}
                     >
                       <X className="h-4 w-4" />
@@ -199,7 +301,7 @@ const Upload = () => {
                       <div className="space-y-2">
                         {columns
                           .filter((c) => c.type === "sensitive")
-                          .map((col, i) => {
+                          .map((col) => {
                             const originalIndex = columns.findIndex((c) => c.name === col.name);
                             return (
                               <div key={col.name} className="flex items-center gap-2">
@@ -214,6 +316,9 @@ const Upload = () => {
                               </div>
                             );
                           })}
+                        {columns.filter((c) => c.type === "sensitive").length === 0 && (
+                          <p className="text-xs text-muted-foreground">No sensitive columns detected</p>
+                        )}
                       </div>
                     </div>
 
@@ -238,6 +343,9 @@ const Upload = () => {
                               </div>
                             );
                           })}
+                        {columns.filter((c) => c.type === "numeric").length === 0 && (
+                          <p className="text-xs text-muted-foreground">No numeric columns detected</p>
+                        )}
                       </div>
                     </div>
 
@@ -262,6 +370,9 @@ const Upload = () => {
                               </div>
                             );
                           })}
+                        {columns.filter((c) => c.type === "categorical").length === 0 && (
+                          <p className="text-xs text-muted-foreground">No categorical columns detected</p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -360,7 +471,7 @@ const Upload = () => {
                     size="xl"
                     className="w-full mt-4"
                     onClick={handleGenerate}
-                    disabled={isGenerating}
+                    disabled={isGenerating || isLoading}
                   >
                     {isGenerating ? (
                       <span className="flex items-center gap-2">
