@@ -145,3 +145,58 @@
     opacity: 0.7;
   }
 }
+
+/* Aleo Wallet Adapter Modal Styling */
+.wallet-adapter-modal-wrapper {
+  @apply bg-background/90 backdrop-blur-md;
+}
+
+.wallet-adapter-modal {
+  @apply bg-card border border-border rounded-sm !important;
+  font-family: inherit !important;
+}
+
+.wallet-adapter-modal-title {
+  @apply text-foreground font-medium text-sm uppercase tracking-wider !important;
+}
+
+.wallet-adapter-modal-list {
+  @apply space-y-2 !important;
+}
+
+.wallet-adapter-modal-list li {
+  @apply bg-secondary hover:bg-muted transition-colors rounded-sm !important;
+}
+
+.wallet-adapter-modal-list-more {
+  @apply text-muted-foreground hover:text-foreground !important;
+}
+
+.wallet-adapter-button {
+  @apply bg-primary text-primary-foreground hover:bg-primary/90 rounded-sm font-normal text-xs uppercase tracking-wider !important;
+}
+
+.wallet-adapter-button-trigger {
+  @apply bg-secondary border border-border hover:bg-muted text-foreground !important;
+}
+
+.wallet-adapter-dropdown {
+  @apply bg-popover border border-border rounded-sm shadow-lg !important;
+}
+
+.wallet-adapter-dropdown-list {
+  @apply bg-popover !important;
+}
+
+.wallet-adapter-dropdown-list-item {
+  @apply text-foreground hover:bg-muted transition-colors !important;
+}
+
+/* Custom wallet button wrapper styles */
+.wallet-button-wrapper {
+  @apply flex flex-col items-end;
+}
+
+.wallet-button-wrapper button {
+  @apply font-normal !important;
+}

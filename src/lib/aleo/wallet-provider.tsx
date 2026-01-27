@@ -15,6 +15,8 @@ interface AleoWalletProviderProps {
 }
 
 export const AleoWalletProvider: FC<AleoWalletProviderProps> = ({ children }) => {
+  // Initialize Leo Wallet adapter for Aleo Testnet Beta
+  // Following: https://docs.leo.app/aleo-wallet-adapter/
   const wallets = useMemo(
     () => [
       new LeoWalletAdapter({
